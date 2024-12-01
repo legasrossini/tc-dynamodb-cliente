@@ -3,7 +3,7 @@ name: Validate Terraform and Create Pull Request
 on:
   push:
     branches:
-      - develop
+      - feature/*
 
 jobs:
   terraform-validate:
@@ -33,8 +33,16 @@ jobs:
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.PAT }}
-          base: main
-          branch: develop
-          title: 'Sync develop to main'
-          body: 'This is an automated PR to sync changes from develop to main.'
+          base: develop
+          branch: ${{ github.ref_name }}
+          title: 'Sync feature branch to develop'
+          body: 'This is an automated PR to sync changes from feature branch to develop.'
           draft: false
+
+      - name: Merge Pull Request
+        if: ${{ success() }}
+        run: |
+          PR_NUMBER=$(gh pr list --state open --head ${{ github.ref_name }} --json number --jq '.[0].number')
+          gh pr merge $PR_NUMBER --merge --admin
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}

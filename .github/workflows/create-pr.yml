@@ -38,3 +38,11 @@ jobs:
           title: 'Sync develop to main'
           body: 'This is an automated PR to sync changes from develop to main.'
           draft: false
+
+      - name: Merge Pull Request
+        if: ${{ success() }}
+        run: |
+          PR_NUMBER=$(gh pr list --state open --head develop --json number --jq '.[0].number')
+          gh pr merge $PR_NUMBER --merge --admin
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}

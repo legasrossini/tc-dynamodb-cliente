@@ -18,9 +18,11 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+        working-directory: ./infra
 
       - name: Terraform Validate
         run: terraform validate
+        working-directory: ./infra
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -55,10 +57,12 @@ jobs:
       - name: Terraform Destroy
         if: env.destroy == 'true' && env.TABLE_EXISTS != 'false'
         run: terraform destroy -auto-approve
+        working-directory: ./infra
 
       - name: Terraform Apply
         if: env.destroy != 'true'
         run: terraform apply -auto-approve
+        working-directory: ./infra
 
       - name: Record end time and calculate duration
         run: |

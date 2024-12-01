@@ -1,6 +1,6 @@
 # tc-dynamodb-cliente
 
-Um projeto de exemplo para gerenciar um banco de dados DynamoDB com Terraform e GitHub Actions para o curso de Arquitetura de Software na instituição de ensino FIAP.
+Projeto de exemplo para gerenciar um banco de dados DynamoDB com Terraform e GitHub Actions para o curso de Arquitetura de Software na instituição de ensino FIAP.
 
 ![AWS DynamoDB](https://img.shields.io/badge/AWS-DynamoDB-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
 

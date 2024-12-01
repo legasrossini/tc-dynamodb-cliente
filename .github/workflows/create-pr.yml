@@ -1,7 +1,7 @@
 name: Validate Terraform and Create Pull Request
 
 on:
-  push:
+  pull_request:
     branches:
       - develop
 
@@ -22,13 +22,18 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Fetch all branches
-        run: git fetch --all
+      - name: Merge PR to Develop
+        if: ${{ success() }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout develop
+          git merge --no-ff ${{ github.event.pull_request.head.ref }}
+          git push origin develop
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Ensure develop is up to date
-        run: git pull origin develop
-
-      - name: Create Pull Request
+      - name: Create Pull Request to Main
         if: ${{ success() }}
         uses: peter-evans/create-pull-request@v4
         with:
@@ -38,11 +43,3 @@ jobs:
           title: 'Sync develop to main'
           body: 'This is an automated PR to sync changes from develop to main.'
           draft: false
-
-      - name: Merge Pull Request
-        if: ${{ success() }}
-        run: |
-          PR_NUMBER=$(gh pr list --state open --head develop --json number --jq '.[0].number')
-          gh pr merge $PR_NUMBER --merge --admin
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}

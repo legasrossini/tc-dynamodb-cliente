@@ -13,14 +13,4 @@ resource "aws_dynamodb_table" "cliente" {
     name = "cpf"
     type = "S"
   }
-
-  attribute {
-    name = "nome"
-    type = "S"
-  }
-
-  attribute {
-    name = "email"
-    type = "S"
-  }
 }

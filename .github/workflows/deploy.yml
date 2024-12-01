@@ -52,10 +52,14 @@ jobs:
         id: check_table
         if: env.destroy == 'true'
         run: |
-          aws dynamodb describe-table --table-name ${{ env.TF_VAR_table_name }} || echo "Table does not exist" >> $GITHUB_ENV
+          if aws dynamodb describe-table --table-name ${{ env.TF_VAR_table_name }}; then
+            echo "TABLE_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "TABLE_EXISTS=false" >> $GITHUB_ENV
+          fi
 
       - name: Terraform Destroy
-        if: env.destroy == 'true' && env.TABLE_EXISTS != 'false'
+        if: env.destroy == 'true' && env.TABLE_EXISTS == 'true'
         run: terraform destroy -auto-approve
         working-directory: ./infra
 

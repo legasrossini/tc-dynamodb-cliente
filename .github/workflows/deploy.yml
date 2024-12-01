@@ -1,3 +1,6 @@
+Para utilizar o valor padrão da variável `table_name` definida no `variables.tf` diretamente no seu arquivo `deploy.yml`, você pode definir a variável de ambiente com o valor padrão diretamente no script. Aqui está como você pode atualizar o seu arquivo `deploy.yml`:
+
+  ```yaml
 name: Terraform Deploy Workflow
 
 on:
@@ -34,6 +37,7 @@ jobs:
           echo "TF_VAR_aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "TF_VAR_aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           echo "TF_VAR_region=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+          echo "TF_VAR_table_name=Cliente" >> $GITHUB_ENV
 
       - name: Record start time
         id: start_time
@@ -49,7 +53,7 @@ jobs:
         id: check_table
         if: env.destroy == 'true'
         run: |
-          aws dynamodb describe-table --table-name Cliente || echo "Table does not exist" >> $GITHUB_ENV
+          aws dynamodb describe-table --table-name ${{ env.TF_VAR_table_name }} || echo "Table does not exist" >> $GITHUB_ENV
 
       - name: Terraform Destroy
         if: env.destroy == 'true' && env.TABLE_EXISTS != 'false'
@@ -65,3 +69,6 @@ jobs:
           start_time=${{ env.start_time }}
           duration=$((end_time - start_time))
           echo "Deployment to AWS took $duration seconds."
+  ```
+  
+  Com essas alterações, a variável `table_name` será definida com o valor padrão "Cliente" diretamente no script.

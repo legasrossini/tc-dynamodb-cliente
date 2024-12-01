@@ -1,0 +1,60 @@
+name: Terraform Deploy Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Record start time
+        id: start_time
+        run: echo "start_time=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Check if destroy is true
+        id: check_destroy
+        run: |
+          destroy=$(cat infra/destroy.yml | grep destroy | cut -d ' ' -f 2)
+          echo "destroy=$destroy" >> $GITHUB_ENV
+
+      - name: Check if DynamoDB Table Exists
+        id: check_table
+        if: env.destroy == 'true'
+        run: |
+          aws dynamodb describe-table --table-name Cliente || echo "Table does not exist" >> $GITHUB_ENV
+
+      - name: Terraform Destroy
+        if: env.destroy == 'true' && env.TABLE_EXISTS != 'false'
+        run: terraform destroy -auto-approve
+
+      - name: Terraform Apply
+        if: env.destroy != 'true'
+        run: terraform apply -auto-approve -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" -var "region=${{ secrets.AWS_REGION }}"
+
+      - name: Record end time and calculate duration
+        run: |
+          end_time=$(date +%s)
+          start_time=${{ env.start_time }}
+          duration=$((end_time - start_time))
+          echo "Deployment to AWS took $duration seconds."

@@ -22,12 +22,17 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+      - name: Fetch and Checkout Develop
+        if: ${{ success() }}
+        run: |
+          git fetch origin develop:develop
+          git checkout develop
+
       - name: Merge PR to Develop
         if: ${{ success() }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout develop
           git merge --no-ff ${{ github.event.pull_request.head.ref }}
           git push origin develop
         env:

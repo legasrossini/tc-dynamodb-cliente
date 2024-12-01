@@ -22,10 +22,11 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Fetch and Checkout Develop
+      - name: Fetch and Checkout Branches
         if: ${{ success() }}
         run: |
           git fetch origin develop:develop
+          git fetch origin ${{ github.event.pull_request.head.ref }}:${{ github.event.pull_request.head.ref }}
           git checkout develop
 
       - name: Merge PR to Develop

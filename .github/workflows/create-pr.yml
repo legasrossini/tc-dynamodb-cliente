@@ -29,7 +29,6 @@ jobs:
           git checkout develop
           git pull origin develop
           git fetch origin ${{ github.event.pull_request.head.ref }}:${{ github.event.pull_request.head.ref }}
-          git checkout ${{ github.event.pull_request.head.ref }}
 
       - name: Merge PR to Develop
         if: ${{ success() }}
@@ -43,11 +42,17 @@ jobs:
 
       - name: Create Pull Request to Main
         if: ${{ success() }}
-        uses: peter-evans/create-pull-request@v4
+        uses: actions/github-script@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: main
-          branch: develop
-          title: 'Sync develop to main'
-          body: 'This is an automated PR to sync changes from develop to main.'
-          draft: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pullRequest } = await github.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Sync develop to main',
+              head: 'develop',
+              base: 'main',
+              body: 'This is an automated PR to sync changes from develop to main.',
+              draft: false
+            });
+            console.log(`Created pull request: ${pullRequest.html_url}`);

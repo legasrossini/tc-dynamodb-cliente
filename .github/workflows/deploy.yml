@@ -35,6 +35,26 @@ jobs:
           echo "TF_VAR_aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           echo "TF_VAR_region=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
 
+      - name: Record start time
+        id: start_time
+        run: echo "start_time=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Check if destroy is true
+        id: check_destroy
+        run: |
+          destroy=$(cat infra/destroy.yml | grep destroy | cut -d ' ' -f 2)
+          echo "destroy=$destroy" >> $GITHUB_ENV
+
+      - name: Check if DynamoDB Table Exists
+        id: check_table
+        if: env.destroy == 'true'
+        run: |
+          aws dynamodb describe-table --table-name Cliente || echo "Table does not exist" >> $GITHUB_ENV
+
+      - name: Terraform Destroy
+        if: env.destroy == 'true' && env.TABLE_EXISTS != 'false'
+        run: terraform destroy -auto-approve
+
       - name: Terraform Apply
         if: env.destroy != 'true'
         run: terraform apply -auto-approve

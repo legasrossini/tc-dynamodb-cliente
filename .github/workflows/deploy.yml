@@ -58,6 +58,10 @@ jobs:
             echo "TABLE_EXISTS=false" >> $GITHUB_ENV
           fi
 
+      - name: Terraform Refresh
+        run: terraform refresh
+        working-directory: ./infra
+
       - name: Terraform Destroy
         if: env.destroy == 'true' && env.TABLE_EXISTS == 'true'
         run: terraform destroy -auto-approve

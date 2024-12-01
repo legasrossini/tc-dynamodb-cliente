@@ -30,4 +30,11 @@ jobs:
 
       - name: Create Pull Request
         if: ${{ success() }}
-        uses: peter-evans/crea
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.PAT }}
+          base: main
+          branch: develop
+          title: 'Sync develop to main'
+          body: 'This is an automated PR to sync changes from develop to main.'
+          draft: false

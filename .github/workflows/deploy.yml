@@ -27,6 +27,14 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Export environment variables
+        run: |
+          echo "TF_VAR_aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "TF_VAR_aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "TF_VAR_region=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+          echo "TF_VAR_table_name=Cliente" >> $GITHUB_ENV
 
       - name: Record start time
         id: start_time
@@ -42,7 +50,7 @@ jobs:
         id: check_table
         if: env.destroy == 'true'
         run: |
-          aws dynamodb describe-table --table-name Cliente || echo "Table does not exist" >> $GITHUB_ENV
+          aws dynamodb describe-table --table-name ${{ env.TF_VAR_table_name }} || echo "Table does not exist" >> $GITHUB_ENV
 
       - name: Terraform Destroy
         if: env.destroy == 'true' && env.TABLE_EXISTS != 'false'
@@ -50,7 +58,7 @@ jobs:
 
       - name: Terraform Apply
         if: env.destroy != 'true'
-        run: terraform apply -auto-approve -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" -var "region=${{ secrets.AWS_REGION }}"
+        run: terraform apply -auto-approve
 
       - name: Record end time and calculate duration
         run: |

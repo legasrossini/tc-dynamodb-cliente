@@ -36,45 +36,12 @@ jobs:
           echo "TF_VAR_aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "TF_VAR_aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           echo "TF_VAR_region=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
-          echo "TF_VAR_table_name=Cliente" >> $GITHUB_ENV
-
-      - name: Record start time
-        id: start_time
-        run: echo "start_time=$(date +%s)" >> $GITHUB_ENV
-
-      - name: Check if destroy is true
-        id: check_destroy
-        run: |
-          destroy=$(cat infra/destroy.yml | grep destroy | cut -d ' ' -f 2)
-          echo "destroy=$destroy" >> $GITHUB_ENV
-
-      - name: Check if DynamoDB Table Exists
-        id: check_table
-        if: env.destroy == 'true'
-        run: |
-          if aws dynamodb describe-table --table-name ${{ env.TF_VAR_table_name }}; then
-            echo "TABLE_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "TABLE_EXISTS=false" >> $GITHUB_ENV
-          fi
+          echo "TF_VAR_table_name=cliente" >> $GITHUB_ENV
 
       - name: Terraform Refresh
         run: terraform refresh -input=false
         working-directory: ./infra
 
-      - name: Terraform Destroy
-        if: env.destroy == 'true' && env.TABLE_EXISTS == 'true'
-        run: terraform destroy -auto-approve
-        working-directory: ./infra
-
       - name: Terraform Apply
-        if: env.destroy != 'true'
         run: terraform apply -auto-approve
         working-directory: ./infra
-
-      - name: Record end time and calculate duration
-        run: |
-          end_time=$(date +%s)
-          start_time=${{ env.start_time }}
-          duration=$((end_time - start_time))
-          echo "Deployment to AWS took $duration seconds."

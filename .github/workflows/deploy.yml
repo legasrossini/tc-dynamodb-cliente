@@ -59,7 +59,7 @@ jobs:
           fi
 
       - name: Terraform Refresh
-        run: terraform refresh
+        run: terraform refresh -input=false
         working-directory: ./infra
 
       - name: Terraform Destroy

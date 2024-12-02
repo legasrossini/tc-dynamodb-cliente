@@ -30,7 +30,7 @@ O branch `develop` é utilizado para desenvolvimento contínuo. Todas as mudanç
 4. **Validação do Terraform**: Valida a configuração do Terraform.
 5. **Busca de Todos os Branches**: Garante que todos os branches estejam atualizados.
 6. **Atualização do Branch `develop`**: Garante que o branch `develop` esteja atualizado.
-7. **Criação do Pull Request**: Cria um Pull Request para mesclar as mudanças do branch `develop` no branch `main`.
+7. **Criação ou Atualização do Pull Request**: Cria ou atualiza um Pull Request para mesclar as mudanças do branch `develop` no branch `main`.
 
 ### Branch `main`
 

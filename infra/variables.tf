@@ -17,5 +17,5 @@ variable "region" {
 variable "table_name" {
   description = "DynamoDB table name"
   type        = string
-  default     = "Cliente"
+  default     = "cliente"
 }

@@ -40,19 +40,39 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Pull Request to Main
+      - name: Create or Update Pull Request to Main
         if: ${{ success() }}
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.PAT }}
           script: |
-            const { data: pullRequest } = await github.rest.pulls.create({
+            const { data: existingPullRequests } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Sync develop to main',
               head: 'develop',
               base: 'main',
-              body: 'This is an automated PR to sync changes from develop to main.',
-              draft: false
+              state: 'open'
             });
-            console.log(`Created pull request: ${pullRequest.html_url}`);
+
+            if (existingPullRequests.length > 0) {
+              const pullRequest = existingPullRequests[0];
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pullRequest.number,
+                title: 'Sync develop to main',
+                body: 'This is an automated PR to sync changes from develop to main.'
+              });
+              console.log(`Updated pull request: ${pullRequest.html_url}`);
+            } else {
+              const { data: pullRequest } = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Sync develop to main',
+                head: 'develop',
+                base: 'main',
+                body: 'This is an automated PR to sync changes from develop to main.',
+                draft: false
+              });
+              console.log(`Created pull request: ${pullRequest.html_url}`);
+            }
